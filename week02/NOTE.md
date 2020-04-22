@@ -1,7 +1,5 @@
 # 第二周学习总结
 
-本周学习的内容主要有：编程语言通识
-
 以下是部分来自于训练营的学习笔记：
 
 - 乔姆斯基谱系：是计算机科学中刻画形式文法表达能力的一个分类谱系，是由诺姆·乔姆斯基于 1956 年提出的。它包括四个层次：
@@ -23,13 +21,17 @@
 - 产生式： 在计算机中指 Tiger 编译器将源程序经过词法分析（Lexical Analysis）和语法分析（Syntax Analysis）后得到的一系列符合文法规则（Backus-Naur Form，BNF）的语句
 - 静态和动态语言： https://www.cnblogs.com/raind/p/8551791.html
 - 强类型： 无隐式转换
-- 弱类型： 有隐式转换
+- 弱类型： 有隐式转换( c++ 也是)
 - 协变与逆变： https://jkchao.github.io/typescript-book-chinese/tips/covarianceAndContravariance.html
 - Yacc 与 Lex 快速入门： https://www.ibm.com/developerworks/cn/linux/sdk/lex/index.html
 - 关于元编程： https://www.zhihu.com/question/23856985
 - 编程语言的自举： https://www.cnblogs.com/lidyan/p/6727184.html
 
-## 产生式（BNF）--巴科斯诺尔范式
+## 编程语言通识基础
+
+本周学习的内容主要有：编程语言通识
+
+### 产生式（BNF）--巴科斯诺尔范式
 
 - 用尖括号括起来的名称来表示语法结构名
 - 语法结构分成基础结构和需要用其他语法结构定义的复合结构
@@ -89,14 +91,50 @@ DecimalNumber 即可匹配 0 和 除 0 以外的任意整数如 1、111、102901
 
 到此已经可以得到一份语言的定义。
 
-## 通过产生式理解
+### 通过产生式理解乔姆斯基谱系
 
 1. 0 型 无限制文法，左侧可以有任意的非终结符： <a> <b> ::= "c"
-1. 1 型 上下文相关文法，格式对应 "a" <b> "c" ::= "a" "x" "c" --->可以得到 <b> = "x"
-1. 2 型 上下文无关文法，<a> ::= "c"
-1. 3 型 正则文法
+2. 1 型 上下文相关文法，格式对应 "a" <b> "c" ::= "a" "x" "c" --->可以得到 <b> = "x"
+3. 2 型 上下文无关文法，<a> ::= "c"
+4. 3 型 正则文法
+
+学习产生式可以从更规范的角度看待一门语言，也会显得更加的专业，便于与别人沟通。
 
 小知识：
 
 1. 某些场景下 JavaScript 正则性能并不是很好，跟受处理的文本长度很相关
-1. JavaScript 在大多数场景下是 2 型文法，少数场景为 1 型，比如 get 可以是关键字也可以是变量名标识符
+2. JavaScript 在大多数场景下是 2 型文法，少数场景为 1 型，比如 get 可以是关键字也可以是变量名标识符，表达式大多数在 3 型。
+
+### 知识扩展
+
+1. 图灵完备性
+2. 动态与静态
+3. 类型系统
+4. 一般命令式编程语言
+   有五个组成部分
+   1. Atom: 元子
+      - Identifier: 变量名、标识符
+      - Literal: 直接量 123、3.2
+   2. Expression：表达式
+      - Atom
+      - Operator
+      - Punctuator：操作符
+   3. Statement： 语句
+      - Expression
+      - Keyword: 关键字
+      - Punctuator
+   4. Structure：结构化
+      - Function
+      - Class
+      - Process
+      - Namespace
+      - ......
+   5. Program
+      - Program
+      - Module
+      - Package
+      - Library
+
+## 词法，类型
+
+<!-- @Todo 待补充 -->
