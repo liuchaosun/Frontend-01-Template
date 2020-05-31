@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style></style>
+  </head>
+  <body>
+    <div>
+      <div>
+        <span>
+          <a id="id" href="" class="class1">我是a标签</a>
+        </span>
+      </div>
+    </div>
+
+    <script>
+      // 判断选择器是否可用
+      function judgeSelector(str) {
+        if (!str) {
+          return false;
+        }
+        if (typeof str !== "string") {
+          return false;
+        }
+        return true;
+      }
+
+      // 判断是否dom对象
+      function judgeDom(element) {
+        if (!element) {
+          return false;
+        }
+        if (element.nodeType !== 1) {
+          return false;
+        }
+        // 排除对象中存在属性 nodeType: 1的情况
+        try {
+          // cloneNode方法只有dom对象具有
+          let node = element.cloneNode();
+          return node.nodeType === 1;
+        } catch (error) {
+          return false;
+        }
+      }
+
+      // 从一段字符串中找出第一个特殊字符的位置
+      function findSpecial(str) {
+        let spAr = [
+          {
+            w: "#",
+            i: -1,
+          },
+          {
+            w: ".",
+            i: -1,
+          },
+        ];
+
+        spAr.forEach((item) => {
+          item.i = str.indexOf(item.w);
+        });
+
+        return Math.min(
+          ...spAr.map((item) => item.i).filter((item) => item !== -1)
+        );
+      }
+
+      // 获取匹配类型
+      function _getStartType(s) {
+        // #开始
+        if (s.startsWith("#")) {
+          return "id";
+        }
+        //以 . 开始
+        if (s.startsWith(".")) {
+          return "class";
+        }
+        // 以标签开始
+        return "tagName";
+      }
+
+      // 简单选择器匹配,标签或者id或class
+      function _simpleMatch(selector, element) {
+        let startType = _getStartType(selector);
+        if (startType !== "tagName") {
+          // 是其他类型有特殊字符，需要去掉
+          selector = selector.substring(1);
+        }
+        switch (startType) {
+          case "tagName":
+            return element.tagName.toLowerCase() === selector;
+          case "class":
+            return element.classList.contains(selector);
+          case "id":
+            return element.id === selector;
+          default:
+            return false;
+        }
+      }
+
+      // 复合选择器，暂时只支持 标签+id+class 组合的复合选择器
+      function _compoundMatch(selector, element) {
+        let flag = false;
+        // 复合选择器必须标签在前面，除此之外的特殊符号是 # 和 .
+        while (selector.length > 0) {
+          let firstW = "";
+          let startW = "";
+
+          let startType = _getStartType(selector);
+          if (startType !== "tagName") {
+            startW = selector.substring(0, 1);
+            selector = selector.substring(1);
+          }
+          // 找到第一个特殊字符的下标--如果没有特殊字符，返回Infinity
+          let _fi = findSpecial(selector);
+          if (_fi !== Infinity) {
+            // 取出去的是需要判断的，剩下的留下一个循环判断
+            firstW = selector.substring(0, _fi);
+            selector = selector.substring(_fi);
+          } else {
+            //整个剩余选择器都为需要判断的value，最终剩下的值则为空
+            firstW = selector;
+            selector = "";
+          }
+          console.log("待匹配", startW + firstW);
+          flag = _simpleMatch(startW + firstW, element);
+          console.log("匹配结果", flag);
+
+          if (!flag) {
+            //匹配失败
+            return false;
+          }
+        }
+
+        return flag;
+      }
+
+      // 编写一个match函数，检查dom元素是否可以被选择器选中
+      function _complexMatch(selector, element) {
+        console.error("待匹配选择器：", selector);
+
+        selector = selector || "";
+        // 选择器必须是字符串
+        if (!judgeSelector(selector)) {
+          console.error("选择器必须是字符串");
+          return false;
+        }
+        if (!judgeDom(element)) {
+          console.error("目标元素必须是dom节点");
+          return false;
+        }
+        // 排除开头和结尾 > 的干扰
+        selector = selector.replace(/^>+/g, "").replace(/>+$/g, "");
+
+        // 先通过空格分割选择器，判断是否需要向上检查
+        // 通过空格分割后得到的数组的长度，即为检查的父节点次数
+        selectorArr = selector.trim().split(" ");
+
+        let matchFlag = false;
+        if (selectorArr.length > 1) {
+          let firstTime = true;
+          let nextSelector = true;
+
+          // 从最后一个节点开始
+          let lastS = null;
+          // 资源够取或者不需要取资源的时候进入
+          while (selectorArr.length > 0 || !nextSelector) {
+            if (nextSelector) {
+              lastS = selectorArr.pop();
+            }
+            // 如果当前元素匹配当前节点失败，则结束
+            matchFlag = _compoundMatch(lastS, element);
+
+            if (!matchFlag && firstTime) {
+              console.error("匹配失败");
+              return false;
+            }
+            // 第一次匹配完后标识改变
+            firstTime = false;
+            // 是否匹配下一个选择器跟当前轮次的匹配结果正相关
+            nextSelector = matchFlag;
+
+            if (element.parentNode.nodeType !== 1) {
+              //再往上没有父节点了
+              console.info("匹配的结果是：", matchFlag);
+              return matchFlag;
+            }
+
+            element = element.parentNode;
+          }
+        }
+
+        // TODO 还有直接子选择器 > 需要考虑
+      }
+
+      _complexMatch("div #id.class1", document.querySelector("#id"));
+    </script>
+  </body>
+</html>
