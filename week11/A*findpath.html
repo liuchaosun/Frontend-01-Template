@@ -207,8 +207,8 @@
               yDif = y - y0;
 
             if (
-              map[(y0 + yDif) * X_Len + x0] !== 0 &&
-              map[y0 * X_Len + (x0 + xDif)] !== 0
+              map[(y0 + yDif) * X_Len + x0] === 1 &&
+              map[y0 * X_Len + (x0 + xDif)] === 1
             ) {
               return;
             }
