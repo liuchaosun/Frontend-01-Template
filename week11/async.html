@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>红绿灯异步编程</title>
+    <style>
+      div {
+        background-color: gray;
+        height: 100px;
+        width: 100px;
+        border-radius: 50%;
+      }
+      .green.light {
+        background-color: green;
+      }
+      .yellow.light {
+        background-color: yellow;
+      }
+      .red.light {
+        background-color: red;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="traffic-light">
+      <div class="green"></div>
+      <div class="yellow"></div>
+      <div class="red"></div>
+    </div>
+
+    <script>
+      let container = document.querySelector("#traffic-light");
+      function disableLight() {
+        for (let i = 0, len = container.children.length; i < len; i++) {
+          container.children[i].classList.remove("light");
+        }
+      }
+      function green() {
+        disableLight();
+        document.querySelector("#traffic-light .green").classList.add("light");
+      }
+      function yellow() {
+        disableLight();
+        document.querySelector("#traffic-light .yellow").classList.add("light");
+      }
+      function red() {
+        disableLight();
+        document.querySelector("#traffic-light .red").classList.add("light");
+      }
+
+      // 时间叠加
+      function go1() {
+        green();
+        setTimeout(function () {
+          yellow();
+        }, 1000);
+        setTimeout(function () {
+          red();
+        }, 1200);
+        setTimeout(function () {
+          go1();
+        }, 1700);
+      }
+      // 回调嵌套----callback hell
+      function go2() {
+        green();
+        setTimeout(function () {
+          yellow();
+          setTimeout(function () {
+            red();
+            setTimeout(function () {
+              go2();
+            }, 500);
+          }, 200);
+        }, 1000);
+      }
+      // 延时器
+      function sleep(time) {
+        return new Promise((resolve) => {
+          setTimeout(resolve, time * 1000);
+        });
+      }
+      // Promise
+      function go3() {
+        green();
+        sleep(10)
+          .then(() => {
+            yellow();
+            return sleep(2);
+          })
+          .then(() => {
+            red();
+            return sleep(5);
+          })
+          .then(() => {
+            go3();
+          });
+      }
+      // async/await
+      async function asyncGo() {
+        green();
+        await sleep(10);
+        yellow();
+        await sleep(2);
+        red();
+        await sleep(5);
+        asyncGo();
+      }
+
+      // Generator
+      function* go5() {
+        while (true) {
+          green();
+
+          yield sleep(10);
+          yellow();
+
+          yield sleep(2);
+          red();
+
+          yield sleep(5);
+        }
+      }
+
+      function run(iterator) {
+        let { value, done } = iterator.next(); // 最后一个yield执行后，while循环
+        if (done) {
+          //正常情况下 yield执行完后 done为 true 结束
+          return;
+        }
+        if (value instanceof Promise) {
+          value.then(() => {
+            run(iterator);
+          });
+        }
+      }
+
+      function co(generator) {
+        return function () {
+          run(generator());
+        };
+      }
+
+      let g = co(go5);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>地图编辑器</title>
+    <style>
+      .cell {
+        display: inline-block;
+        width: 6px;
+        height: 6px;
+        background-color: gray;
+        border-bottom: 1px solid white;
+        border-right: 1px solid white;
+        vertical-align: middle;
+      }
+
+      #container {
+        width: 701px;
+        font-size: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="container"></div>
+
+    <button onclick="saveMap()">save</button>
+    <button onclick="clearMap()">delete</button>
+    <script>
+      /**
+      * 二维数组的方式
+      let a = [
+        [0, 0, 0],
+        [0, 1, 0],
+      ];
+      * 用一维数组表示二维数组的方式
+      let b = [
+        0, 0, 0,
+        0, 1, 0
+      ];
+      用一维数组找二维模式下 map[y][x] 坐标 --> y * xlen + x
+      */
+
+      let boardObj = {
+        // 鼠标点下,画图模式
+        mouseDown: false,
+        // 右键点下，橡皮擦模式
+        clear: false,
+        xlen: 100,
+        ylen: 100,
+      };
+      // 对于数据量比较大的数组，使用一维数组更好
+      // 古老年代没有fill时，想要生成一个大的数组
+      // let map = new Array(10001).join('0').split('').map(s => Number(s))
+      let map = localStorage.map
+        ? JSON.parse(localStorage.map)
+        : new Array(boardObj.xlen * boardObj.ylen).fill(0);
+
+      function creatMap() {
+        let fragment = document.createDocumentFragment();
+        let container = document.getElementById("container");
+        // 由于坐标系是从左上到右下  x横坐标 y纵坐标，值变大是向右x或向下y
+        for (let y = 0; y < boardObj.ylen; y++) {
+          for (let x = 0; x < boardObj.xlen; x++) {
+            let cell = document.createElement("div");
+            cell.classList.add("cell");
+            if (map[y * boardObj.xlen + x] === 1) {
+              cell.style.backgroundColor = "black";
+            }
+            cell.addEventListener("mouseover", function () {
+              if (boardObj.mouseDown) {
+                if (boardObj.clear) {
+                  cell.style.backgroundColor = "";
+                  map[y * boardObj.xlen + x] = 0;
+                } else {
+                  cell.style.backgroundColor = "black";
+                  map[y * boardObj.xlen + x] = 1;
+                }
+              }
+            });
+
+            fragment.appendChild(cell);
+          }
+        }
+        container.appendChild(fragment);
+      }
+
+      // @todo---->后期真正重做时，画出一块区域专门来进行操作，可以添加一些工具栏
+      function bindEvent() {
+        // 鼠标在屏幕上点下
+        document.addEventListener("mousedown", function (e) {
+          boardObj.mouseDown = true;
+          boardObj.clear = e.button === 2;
+        });
+        // 鼠标在屏幕上松开
+        document.addEventListener("mouseup", function () {
+          boardObj.mouseDown = false;
+        });
+        // 禁用鼠标右键，右键用来做橡皮擦
+        document.addEventListener("contextmenu", function (e) {
+          e.preventDefault();
+        });
+      }
+
+      function saveMap() {
+        localStorage.map = JSON.stringify(map);
+      }
+      function clearMap() {
+        delete localStorage.map;
+      }
+      function init() {
+        creatMap();
+        bindEvent();
+      }
+
+      init();
+    </script>
+  </body>
+</html>
