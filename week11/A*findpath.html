@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>8个方向寻路地图编辑器</title>
+    <style>
+      .cell {
+        display: inline-block;
+        width: 6px;
+        height: 6px;
+        background-color: gray;
+        border-bottom: 1px solid white;
+        border-right: 1px solid white;
+        vertical-align: middle;
+      }
+
+      #container {
+        width: 701px;
+        font-size: 0;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="container"></div>
+
+    <button onclick="saveMap()">save</button>
+    <button onclick="clearMap()">delete</button>
+    <script>
+      // 有序的数据结构--存入的数据是乱序，吐出的数据是有序的
+      // sort 默认是冒泡排序，即从小到大，找最大的
+      class Sorted {
+        constructor(data, compare) {
+          this.data = data;
+          this.compare = compare;
+        }
+        take() {
+          if (!this.data.length) {
+            return;
+          }
+          let min = this.data[0];
+          let minIndex = 0;
+          for (let i = 1, len = this.data.length; i < len; i++) {
+            // 这里比较值，为了保证和 sort() 的一致性使用 <
+            if (this.compare(min, this.data[i]) < 0) {
+              // 从一组数据中，找出最小的一个
+              min = this.data[i];
+              minIndex = i;
+            }
+          }
+          // *（很秀的一个操作） 从无序数组中取出最小值,抛弃掉
+          // 通过 min 已经拿到了最小值，原本数组中的最小值要丢弃掉，minIndex 标记了最小值的索引，
+          // 通过用末尾值覆盖最小值的方式，保留了末尾值，丢弃了最小值，再将重复的末尾值丢弃
+          this.data[minIndex] = this.data[this.data.length - 1];
+          this.data.pop();
+
+          return min;
+        }
+
+        insert(v) {
+          this.data.push(v);
+        }
+
+        get length() {
+          return this.data.length;
+        }
+      }
+
+      /**
+                * 用一维数组表示二维数组的方式
+                let a = [
+                  [0, 0, 0],
+                  [0, 1, 0],
+                ];
+                let b = [
+                  0, 0, 0,
+                  0, 1, 0
+                ];
+                用一维数组找二维模式下 map[y][x] 坐标 --> y * xlen + x
+                */
+
+      let boardObj = {
+        // 鼠标点下,画图模式
+        mouseDown: false,
+        // 右键点下，橡皮擦模式
+        clear: false,
+        xlen: 100,
+        ylen: 100,
+      };
+
+      let X_Len = boardObj.xlen;
+      let Y_Len = boardObj.ylen;
+
+      // 对于数据量比较大的数组，使用一维数组更好
+      // 古老年代没有fill时，想要生成一个大的数组
+      // let map = new Array(10001).join('0').split('').map(s => Number(s))
+      let map = localStorage.map
+        ? JSON.parse(localStorage.map)
+        : new Array(X_Len * Y_Len).fill(0);
+
+      let container = document.getElementById("container");
+
+      function creatMap() {
+        let fragment = document.createDocumentFragment();
+        // 由于坐标系是从左上到右下  x横坐标 y纵坐标，值变大是向右x或向下y
+        for (let y = 0; y < Y_Len; y++) {
+          for (let x = 0; x < X_Len; x++) {
+            let cell = document.createElement("div");
+            cell.classList.add("cell");
+            if (map[y * X_Len + x] === 1) {
+              cell.style.backgroundColor = "black";
+            }
+            cell.addEventListener("mouseover", function () {
+              if (boardObj.mouseDown) {
+                if (boardObj.clear) {
+                  cell.style.backgroundColor = "";
+                  map[y * X_Len + x] = 0;
+                } else {
+                  cell.style.backgroundColor = "black";
+                  map[y * X_Len + x] = 1;
+                }
+              }
+            });
+
+            fragment.appendChild(cell);
+          }
+        }
+        container.appendChild(fragment);
+      }
+
+      // @todo---->后期真正重做时，画出一块区域专门来进行操作，可以添加一些工具栏
+      function bindEvent() {
+        // 鼠标在屏幕上点下
+        document.addEventListener("mousedown", function (e) {
+          boardObj.mouseDown = true;
+          boardObj.clear = e.button === 2;
+        });
+        // 鼠标在屏幕上松开
+        document.addEventListener("mouseup", function () {
+          boardObj.mouseDown = false;
+        });
+        // 禁用鼠标右键，右键用来做橡皮擦
+        document.addEventListener("contextmenu", function (e) {
+          e.preventDefault();
+        });
+      }
+
+      function saveMap() {
+        localStorage.map = JSON.stringify(map);
+      }
+      function clearMap() {
+        delete localStorage.map;
+      }
+
+      function sleep(time) {
+        return new Promise((resolve) => {
+          setTimeout(resolve, time * 1000);
+        });
+      }
+      function init() {
+        creatMap();
+        bindEvent();
+      }
+
+      // 求坐标系两点之间的直线距离！！！
+      function distance([x, y], [x0, y0]) {
+        return Math.sqrt((x - x0) ** 2 + (y - y0) ** 2);
+      }
+
+      async function findPath(map, start, end) {
+        container.children[end[1] * X_Len + end[0]].style.backgroundColor =
+          "red";
+
+        // 优化措施：判断目标点位是否可用
+        if (map[end[1] * X_Len + end[0]] !== 0) {
+          return false;
+        }
+        // 防止污染原来的数据
+        map = map.slice();
+
+        // 将起始点入数组，构建一个初始队列
+        let collection = new Sorted(
+          [start],
+          // 回调函数的目的是要让返回的结果满足内部的判断条件
+          // 满足判断条件后，将数组后面的值赋值给当前值
+          // 所有找小的，需要用后减前小于0
+          (cur, next) => distance(next, end) - distance(cur, end)
+        );
+        // 插入判断
+        async function insert([x, y], pre) {
+          // @1： 检查是否越过边界，边界不允许走，这里之所以是大于等于是因为下标从0开始
+          if (x < 0 || y < 0 || x >= X_Len || y >= Y_Len) {
+            return;
+          }
+          // @2： 如果当前点不是空白的不允许走
+          if (map[y * X_Len + x] !== 0) {
+            return;
+          }
+          /**********判断斜角方向是否可走start************/
+          // 判断是否走斜角--> 走斜角的时候横纵坐标同时不相等
+          let [x0, y0] = pre;
+          if (x0 !== x && y0 !== y) {
+            // 走斜角需要满足的条件是斜角方向上不能有两块，比如右下则右和下不能同时不能走
+            // 由于y是由y0通过运算得来，所以用y-y0就可以知道是增大还是减小，x同理
+            let xDif = x - x0,
+              yDif = y - y0;
+
+            if (
+              map[(y0 + yDif) * X_Len + x0] !== 0 &&
+              map[y0 * X_Len + (x0 + xDif)] !== 0
+            ) {
+              return;
+            }
+          }
+          /**********判断斜角方向是否可走end************/
+
+          // 可以走-->修改值，保存走过来的点的坐标
+          map[y * X_Len + x] = pre;
+          // 数据量较大的执行过程不容易看，用可视化的效果展现过程代替打印结果
+          container.children[y * X_Len + x].style.backgroundColor =
+            "lightgreen";
+          await sleep(0.001);
+          collection.insert([x, y]);
+        }
+
+        while (collection.length) {
+          // 从队列里取出一个点--->启发式搜索需要考虑最短路径
+          let [x, y] = collection.take();
+          // 走到最后一个目标点
+          if (x === end[0] && y === end[1]) {
+            let path = [];
+            while (x !== start[0] || y !== start[1]) {
+              path.push([x, y]);
+              container.children[y * X_Len + x].style.backgroundColor = "pink";
+
+              [x, y] = map[y * X_Len + x];
+            }
+            return path;
+          }
+          // 以取出的点为中心往上下左右垂直方向走
+          // 向左
+          await insert([x - 1, y], [x, y]);
+          // 向右
+          await insert([x + 1, y], [x, y]);
+          // 向上
+          await insert([x, y - 1], [x, y]);
+          // 向下
+          await insert([x, y + 1], [x, y]);
+
+          // 向左上
+          await insert([x - 1, y - 1], [x, y]);
+          // 向右上
+          await insert([x + 1, y - 1], [x, y]);
+          // 向左下
+          await insert([x - 1, y + 1], [x, y]);
+          // 向右下
+          await insert([x + 1, y + 1], [x, y]);
+        }
+        return null;
+      }
+
+      init();
+    </script>
+  </body>
+</html>
