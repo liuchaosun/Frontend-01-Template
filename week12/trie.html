@@ -1,0 +1,65 @@
+<script>
+  // 数据结构： 字典表--空间换取时间
+  // 从第一个节点开始 构造多个分支，从分支顶部向下遍历每个节点，极端情况下每个节点都是 24个值
+  class Trie {
+    constructor() {
+      this.root = Object.create(null);
+    }
+    // 插入数据
+    insert(word) {
+      let node = this.root;
+
+      for (let c of word) {
+        if (!node[c]) {
+          node[c] = Object.create(null);
+        }
+        node = node[c];
+      }
+      // 如果末尾没有标识，加上标识
+      if (!("$" in node)) {
+        node["$"] = 0;
+      }
+      // 结尾记录当前分支节点次数
+      node["$"] = node["$"] + 1;
+    }
+
+    //
+    most() {
+      let max = 0;
+      let maxWord = null;
+      let visit = function (node, word) {
+        // 结束标志：遍历到结尾，并且结尾比 max 大
+        if (node.$ && node.$ > max) {
+          max = node.$;
+          maxWord = word;
+        }
+
+        for (let p in node) {
+          visit(node[p], word + p);
+        }
+      };
+
+      visit(this.root, "");
+      return {
+        max,
+        maxWord,
+      };
+    }
+  }
+
+  function rendomWord(length) {
+    var s = "";
+    for (let i = 0; i < length; i++) {
+      // fromCharCode 从ASC码值生成一个字符
+      s += String.fromCharCode(Math.random() * 26 + "a".charCodeAt());
+    }
+    return s;
+  }
+
+  let trie = new Trie();
+
+  for (let i = 0; i < 1000; i++) {
+    trie.insert(rendomWord(4));
+  }
+  console.log(trie);
+</script>

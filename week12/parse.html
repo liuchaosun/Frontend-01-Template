@@ -1,0 +1,40 @@
+<script>
+  function parse(source) {
+    let stack = [];
+    // 字符串遍历- for in
+    // 对象遍历 for of
+    for (let s in source) {
+      if (s === "(" || s === "[" || s === "{") {
+        stack.push(s);
+      }
+      if (s === ")") {
+        if (stack[stack.length - 1] === "(") {
+          stack.pop();
+        } else {
+          return false;
+        }
+      }
+      if (s === "]") {
+        if (stack[stack.length - 1] === "[") {
+          stack.pop();
+        } else {
+          return false;
+        }
+      }
+      if (s === "}") {
+        if (stack[stack.length - 1] === "{") {
+          stack.pop();
+        } else {
+          return false;
+        }
+      }
+    }
+    if (stack.length === 0) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  console.log(parse("a[b(c)]dy"));
+</script>
