@@ -104,3 +104,12 @@ config
 
 ## 组件化 实现 jsx
 
+一个构造解析函数的格式如下：
+
+function creatComponent(Cls, attribute, ...children){}
+
+在 jsx 中，通过大写字母开头创建的 “组件”是自定义的组件， 经过 jsx 处理后，会去找该组件名称对应的 class 类，将该类作为第一个参数传入构造解析函数，如 MyComponent 处理后还是 MyComponent。
+
+在 jsx 中，通过小写字母创建的 "组件" 被解析后将该名称字符串作为第一个参数传入构造解析函数，如 div 处理后变成 'div'。
+
+在 jsx 中，文本类节点将作为第三个参数传入构造解析函数。
