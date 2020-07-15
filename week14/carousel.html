@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=\, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        .carousel{
+            width: 500px;
+            height: 300px;
+            margin: auto;
+            overflow: hidden;
+            white-space: nowrap;
+            outline: 1px solid green;
+        }
+        .carousel>img{
+            width: 100%;
+            height: 100%;
+            display: inline-block;
+            /* transition: ease 0.5s; */
+        }
+    </style>
+</head>
+<body>
+    <div id="container"></div>
+    
+
+    <script>
+        // 轮播图组件
+        class Carousel {
+            constructor(){
+                this.data = null;
+                this.root = null;
+            }
+
+            render(){
+                this.root = document.createElement('div');
+                this.root.classList.add('carousel');
+                if(!this.data){
+                    return ;
+                }
+
+                for(let d of this.data ){
+                    let element = document.createElement('img');
+                    element.src= d;
+                    this.root.appendChild(element);
+                }
+
+                let position = 0;
+                /**
+                 * 轮播函数
+                 * 
+                 * 每次挪动两张图片
+                 * 第一次挪动的图片的末张是下一次挪动的首张
+                 * 因此上一次挪末张的操作 @4 与下一次挪首张的操作 @1 位置一样
+                 * 下一次挪动操作3和4之前，先将本次挪动的末张位置摆好即 @2
+                 * 
+                 * @1 和 @3 的含义是将 1的位置向前挪一位
+                 * 
+                 * 轮播需要的位置是：  -1 ， 0 ， 1
+                 * 移动前需要将待移动的图片移动到 0和1的位置
+                 * 然后一起左移即 -100% 
+                 * */
+                let nextPic = () => {
+                    let nextPosition = ( position + 1 ) % this.data.length
+
+                    let current = this.root.childNodes[position];
+                    let next = this.root.childNodes[nextPosition];
+
+
+                    current.style.transition = 'ease 0s';
+                    next.style.transition = 'ease 0s';
+
+                    current.style.transform = `translateX(${0 - 100 * position + 0}%)`; // @1
+                    next.style.transform = `translateX(${0 - 100 * nextPosition + 100}%)`; // @2
+
+                    setTimeout(function(){
+                        current.style.transition = 'ease 0.5s';
+                        next.style.transition = 'ease 0.5s';
+
+
+                        current.style.transform = `translateX(${0 - 100 * position + 0 - 100}%)`; // @3
+                        next.style.transform = `translateX(${0 - 100 * nextPosition + 100 - 100}%)`;// @4
+
+                        position = nextPosition;
+                    }, 16);
+                   
+
+                    setTimeout(nextPic, 3000);
+                }
+
+                setTimeout(nextPic, 3000);
+            }
+        }
+
+
+        // create
+        let carousel = new Carousel();
+
+        // update
+        carousel.data = [
+            "https://static001.geekbang.org/resource/image/bb/21/bb38fb7c1073eaee1755f81131f11d21.jpg",
+            "https://static001.geekbang.org/resource/image/1b/21/1b809d9a2bdf3ecc481322d7c9223c21.jpg",
+            "https://static001.geekbang.org/resource/image/b6/4f/b6d65b2f12646a9fd6b8cb2b020d754f.jpg",
+            "https://static001.geekbang.org/resource/image/73/e4/730ea9c393def7975deceb48b3eb6fe4.jpg",
+        ];
+        carousel.render();
+
+        // mount
+        document.getElementById('container').appendChild(carousel.root);
+    </script>
+</body>
+</html>
