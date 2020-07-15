@@ -6,13 +6,13 @@
     <title>地图编辑器</title>
     <style>
       .cell {
-        display: inline-block;
         width: 6px;
         height: 6px;
+        display: inline-block;
+        vertical-align: middle;
         background-color: gray;
         border-bottom: 1px solid white;
         border-right: 1px solid white;
-        vertical-align: middle;
       }
 
       #container {
@@ -50,19 +50,21 @@
         ylen: 100,
       };
       // 对于数据量比较大的数组，使用一维数组更好
-      // 古老年代没有fill时，想要生成一个大的数组
+      // 古老年代没有 fill 时，想要生成一个大的数组
       // let map = new Array(10001).join('0').split('').map(s => Number(s))
       let map = localStorage.map
         ? JSON.parse(localStorage.map)
         : new Array(boardObj.xlen * boardObj.ylen).fill(0);
 
+        // 生成地图
       function creatMap() {
-        let fragment = document.createDocumentFragment();
         let container = document.getElementById("container");
+        let fragment = document.createDocumentFragment();
         // 由于坐标系是从左上到右下  x横坐标 y纵坐标，值变大是向右x或向下y
         for (let y = 0; y < boardObj.ylen; y++) {
           for (let x = 0; x < boardObj.xlen; x++) {
             let cell = document.createElement("div");
+
             cell.classList.add("cell");
             if (map[y * boardObj.xlen + x] === 1) {
               cell.style.backgroundColor = "black";

@@ -14,7 +14,6 @@
         border-right: 1px solid white;
         vertical-align: middle;
       }
-
       #container {
         width: 701px;
         font-size: 0;
@@ -29,17 +28,17 @@
     <button onclick="clearMap()">delete</button>
     <script>
       /**
-                * 用一维数组表示二维数组的方式
-                let a = [
-                  [0, 0, 0],
-                  [0, 1, 0],
-                ];
-                let b = [
-                  0, 0, 0,
-                  0, 1, 0
-                ];
-                用一维数组找二维模式下 map[y][x] 坐标 --> y * xlen + x
-                */
+        * 用一维数组表示二维数组的方式
+        let a = [
+          [0, 0, 0],
+          [0, 1, 0],
+        ];
+        let b = [
+          0, 0, 0,
+          0, 1, 0
+        ];
+        用一维数组找二维模式下 map[y][x] 坐标 --> y * xlen + x
+        */
 
       let boardObj = {
         // 鼠标点下,画图模式
@@ -69,17 +68,17 @@
           for (let x = 0; x < X_Len; x++) {
             let cell = document.createElement("div");
             cell.classList.add("cell");
-            if (map[y * X_Len + x] === 1) {
+            if ( map[y * X_Len + x] === 1) {
               cell.style.backgroundColor = "black";
             }
             cell.addEventListener("mouseover", function () {
               if (boardObj.mouseDown) {
                 if (boardObj.clear) {
                   cell.style.backgroundColor = "";
-                  map[y * X_Len + x] = 0;
+                   map[y * X_Len + x] = 0;
                 } else {
                   cell.style.backgroundColor = "black";
-                  map[y * X_Len + x] = 1;
+                   map[y * X_Len + x] = 1;
                 }
               }
             });
@@ -149,10 +148,10 @@
             return;
           }
           /**********判断斜角方向是否可走************/
-          // 判断是否走斜角--> 走斜角的时候横纵坐标同时不相等
+          // 判断是否走斜角 --> 走斜角的时候横纵坐标同时不相等
           let [x0, y0] = pre;
           if (x0 !== x && y0 !== y) {
-            // 走斜角需要满足的条件是斜角方向上不能有两块，比如右下则右和下不能同时不能走
+            // 走斜角需要满足的条件是斜角方向上不能有两块不能，比如右下则右和下不能同时不能走
             // 由于y是由y0通过运算得来，所以用y-y0就可以知道是增大还是减小，x同理
             let xDif = x - x0,
               yDif = y - y0;
@@ -176,8 +175,10 @@
         }
 
         while (queue.length) {
+          // pop 从末尾拿出去,unshift 从开头插入
+          // push 从末尾插入，shift 从开头拿出去--先进先出--> 队列
           // 从队列里取出一个点
-          let [x, y] = queue.shift(); // pop 从末尾拿出去,unshift 从开头插入| push 从末尾插入 shift 从开头拿出去
+          let [x, y] = queue.shift(); 
           // 走到最后一个目标点
           if (x === end[0] && y === end[1]) {
             let path = [];
