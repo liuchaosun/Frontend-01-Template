@@ -86,14 +86,26 @@
 /************************************************************************/
 /******/ ({
 
+/***/ "./carousel.view":
+/*!***********************!*\
+  !*** ./carousel.view ***!
+  \***********************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+eval("throw new Error(\"Module build failed (from ./myloader.js):\\nTypeError: parseHTML is not a function\\n    at Object.module.exports (/Users/sunliuchao/code-repositories/Frontend-01-Template/week15/component/myloader.js:7:15)\");\n\n//# sourceURL=webpack:///./carousel.view?");
+
+/***/ }),
+
 /***/ "./main.js":
 /*!*****************!*\
   !*** ./main.js ***!
   \*****************/
-/*! no static exports found */
-/***/ (function(module, exports) {
+/*! no exports provided */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
-eval("function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError(\"Cannot call a class as a function\"); } }\n\nfunction creatComponent() {}\n\nvar Div = function Div() {\n  _classCallCheck(this, Div);\n};\n\nvar component = creatComponent(Div, {\n  id: \"a\"\n});\nconsole.log(component);\n\n//# sourceURL=webpack:///./main.js?");
+"use strict";
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony import */ var _carousel_view__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./carousel.view */ \"./carousel.view\");\n/* harmony import */ var _carousel_view__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_carousel_view__WEBPACK_IMPORTED_MODULE_0__);\n\n\n//# sourceURL=webpack:///./main.js?");
 
 /***/ })
 
